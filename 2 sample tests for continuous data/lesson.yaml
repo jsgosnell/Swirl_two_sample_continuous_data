@@ -1,0 +1,164 @@
+- Class: meta
+  Course: Swirl_two_sample_continuous data
+  Lesson: 2-sample tests for continuous data
+  Author: J. Stephen Gosnell
+  Type: Standard
+  Organization: Baruch College, City Univeristy of New York
+  Version: 2.4.3
+
+- Class: text
+  Output: Welcome to Swirl! This interface will help review some of the code we've used in class.
+
+- Class: text
+  Output: Today we'll review the methods used to analyze continuous data from two populations.  In this case we are comparing the values we observed (usually the means) from two populations.  Under the null hypothesis, there is no difference among the two populations or groups.  We'll start off by considering data from 2 populations that are not connected (not paired).
+
+- Class: cmd_question
+  Output: This swirl lesson will build directly on our lesson for dealing with one sample of continuous data.  Although most of the functions we'll employ allow you to input data manually or in two groups, we'll focus on using the formula interface to manipulate data from dataframe.  We'll focus on Australian athlete data again.  Load the data from the web-based file using sport <- read.table("http://www.statsci.org/data/oz/ais.txt", header = T)
+  CorrectAnswer: sport <- read.table("http://www.statsci.org/data/oz/ais.txt", header = T)
+  AnswerTests: omnitest(correctExpr='sport <- read.table("http://www.statsci.org/data/oz/ais.txt", header = T)')
+  Hint: Use sport <- read.table("http://www.statsci.org/data/oz/ais.txt", header = T). Note you are reading a tab delimited file so you use read.table and specify it has a header (since the default is false).
+
+- Class: text
+  Output: Good job.  Note you read a tab delimited file so you used read.table and specified it has a header (since the default is false).
+
+- Class: cmd_question
+  Output: Now let's focus on comparing the subset of men that run the 400m dash to those who play water polo.  For ease, let's create an object called male_400m_wpolo that contains this subset using male_400m_wpolo <- sport[sport$Sex == "male" & sport$Sport %in% c("T400m", "WPolo"),]. The %in% operator asks if the variable in question matches any element in a provided list.
+  CorrectAnswer: male_400m_wpolo <- sport[sport$Sex == "male" & sport$Sport %in% c("T400m", "WPolo"),]
+  AnswerTests: omnitest(correctExpr='male_400m_wpolo <- sport[sport$Sex == "male" & sport$Sport %in% c("T400m", "WPolo"),]')
+  Hint: Use male_400m_wpolo <- sport[sport$Sex == "male" & sport$Sport %in% c("T400m", "WPolo"),]. Note you are making a new object from the sport dataframe that has all rows where Sex = male and Sport = T400m.
+
+- Class: text
+  Output: Great. Remember what the notation you used means.  You made a new object from the sport dataframe that has all rows where Sex = male and Sport = T400m or WPolo.
+
+- Class: cmd_question
+  Output: First, let's compare the height of these players (Ht column). Since these are both samples, we'll use the t.test function.  The notation is slightly different that what we used previously.  For 2 samples, we'll use the formuala interface to specify the columns we want to compare, then specify the dataset itself. The formula interface can be interpreted as response ~ (explained by) variable, so in our case we'll do t.test(Ht ~ Sport, male_400m_wpolo). Try it. 
+  CorrectAnswer: t.test(Ht ~ Sport, male_400m_wpolo)
+  AnswerTests: omnitest(correctExpr='t.test(Ht ~ Sport, male_400m_wpolo)')
+  Hint: Try t.test(Ht ~ Sport, male_400m_wpolo)
+
+- Class: mult_question
+  Output: Great. By default R conducts a Welch 2-sample test, which means we don't assume the variance of the two groups is equal.  You can over-ride the default by specifying var.equal = T in the function arguments, but you'll need good reason to do so.  What was the p-value from the test?
+  AnswerChoices: <.001; .102; 5
+  CorrectAnswer: <.001
+  AnswerTests: omnitest(correctVal='<.001')
+  
+- Class: mult_question
+  Output: Using the p-value, do we reject or fail to reject the null hypothesis (assume an alpha level of .05)?
+  AnswerChoices: reject; fail to reject; not sure
+  CorrectAnswer: reject
+  AnswerTests: omnitest(correctVal='reject')
+  Hint: If the p-value is less than .05 (the pre-set alpha level), we reject the null hypothesis. This means we would expect an outcome like we observed or more extreme only 1 time out of 20 (on average) if the null hypothesis were true, so it's unlikely!
+
+- Class: text
+  Output: Sometimes we can't (or don't want) to assume the means of the data is normal. In this case we have some other options.  
+
+- Class: cmd_question
+  Output: We can use a rank-sum test, also known as the Wilcoxon test, if the data is symmetric. The function is wilcox.test, and the commands are the same as the t.test function.  Try it below. 
+  CorrectAnswer: wilcox.test(Ht ~ Sport, male_400m_wpolo)
+  AnswerTests: omnitest(correctExpr='wilcox.test(Ht ~ Sport, male_400m_wpolo)')
+  Hint: Try wilcox.test(Ht ~ Sport, male_400m_wpolo).
+
+- Class: text
+  Output: You can ignore the warning about ties. Finally (for the frequentist tests), we can use a sign test (also known as the median test).  However, this test only works for paired data. Paired data occurs when measurements are taken multiple times on the same subject (across time or space, possibly), and the test is actually doing a one-sample test on the differences between the measuremnts.  Our current test does not meet these criteria, so we'll come back to this idea in a moment.  
+
+- Class: cmd_question
+  Output: We also have a few non-frequentist options for testing the data.  First, we can bootstrap the data, which means we resample the data itself.  The process involves pulling samples (with replacement) from each of your datasets, then constructing a statistic from these.  This creates a null distribution, and then we can compare what we actually found to that distribution to develop a p-value.  To do this load the bootstrapjsg function I provided (you may need to install and require the simpleboot library too), then bootstrap the data. The function is bootstrapjsg, and it requires the data to be broken into 2 groups.  For our problem, try bootstrapjsg(sport[sport$Sex == "male" & sport$Sport == "T400m", "Ht"],  sport[sport$Sex == "male" & sport$Sport == "WPolo", "Ht" ])
+  CorrectAnswer: bootstrapjsg(sport[sport$Sex == "male" & sport$Sport == "T400m", "Ht"],  sport[sport$Sex == "male" & sport$Sport == "WPolo", "Ht" ])
+  AnswerTests: omnitest(correctExpr='bootstrapjsg(sport[sport$Sex == "male" & sport$Sport == "T400m", "Ht"],  sport[sport$Sex == "male" & sport$Sport == "WPolo", "Ht" ])')
+  Hint: Try bootstrapjsg(sport[sport$Sex == "male" & sport$Sport == "T400m", "Ht"],  sport[sport$Sex == "male" & sport$Sport == "WPolo", "Ht" ]).
+
+- Class: text
+  Output: Great job! Note the output provides a bootstrapped confidence interval and a p-value!
+  
+- Class: cmd_question
+  Output: One new, non-frequentist option we have for 2+ samples is the use of permutation tests. We discussed permutations, or arrangements of data from a set, during the probability lecture.  Logically, if there are no difference between our populations, we should be able to randomly match group and response variables. Each way of doing this is one permutation (notice these should really be called combination or randomization tests...).  We could find all possible combinations of the data and compute test statistics from those to create a null distribution, then compare that what we actually found to get p-values.  Often times we can't find all the combinations (there are too many!), but a good sample (10,000+) should work. The r function that we'll use for this is independence_test from the coin package. It uses the same arguments as the t-test (including the formula interface). Try it.  
+  CorrectAnswer: independence_test(Ht ~ Sport, male_400m_wpolo)
+  AnswerTests: omnitest(correctExpr='independence_test(Ht ~ Sport, male_400m_wpolo)')
+  Hint: Try independence_test(Ht ~ Sport, male_400m_wpolo).
+
+- Class: cmd_question
+  Output: Finally, we can take a Bayesian approach to the question.  The ttestBF function (in the BayesFactor library) provides support for the null or alternative models, but sometimes its has issues with sample size or formula interface.  You can instead get a 2-sample t-test Bayes factor from http://pcl.missouri.edu/bf-two-sample.  Go there now and input the data you need.  To get the t-test value, re-run our t-test with the water polo and 400 m data (t.test(Ht ~ Sport, male_400m_wpolo).
+  CorrectAnswer: t.test(Ht ~ Sport, male_400m_wpolo)
+  AnswerTests: omnitest(correctExpr='t.test(Ht ~ Sport, male_400m_wpolo)')
+  Hint: Try t.test(Ht ~ Sport, male_400m_wpolo).
+
+- Class: cmd_question
+  Output: Then use the summary command to find sample sizes for each group. 
+  CorrectAnswer: summary(male_400m_wpolo)
+  AnswerTests: omnitest(correctExpr='summary(male_400m_wpolo)')
+  Hint: Try summary(male_400m_wpolo).
+
+- Class: mult_question
+  Output: Hit enter to get the Bayes Factor. What is it?
+  AnswerChoices: 297; 1.25; 0.52
+  CorrectAnswer: 297
+  AnswerTests: omnitest(correctVal='297')
+
+- Class: mult_question
+  Output: Great. A Bayes Factor of greater than 1 supports the alternative, and less than 1 supports the null. What does our output suggest?
+  AnswerChoices: support null; support alternative; not sure
+  CorrectAnswer: support alternative
+  AnswerTests: omnitest(correctVal='support alternative')
+  Hint: Is the Bayes Factor greater or less than 1?
+
+- Class: text
+  Output: Good job.  The magnitude of the Bayes Factor also indicates the strength of support (see lecture slides for a scale)
+  
+  
+- Class: text
+  Output: Finally, let's think about tests where we have paired samples. This occurs when we have 2 sets of measurements (like our other examples), but each one from one set is related to a measure in the other set. For example, the same person is measured before and after taking a medication or after exercising.  By including this part of the experimental design in our tests, we reduce some of the noise in our data and thus make it easier to find difference among the measurements.  To do this, we'll use the same functions, but instead of using the formula interface we'll put in each group (like we did already for the bootstrapjsg function). For the t.test and wilcox.test functions, we'll add the argument paired = T.  For the sign test, 2 sample data must be paired, so you don't have to add the argument.     
+
+- Class: cmd_question
+  Output: We'll practice the paired designs using data collected by a health professor to determine if freshmen really gain weight upon entering college (the freshmen 15).  New students were measured at the beginning of the semester and again 12 weeks later.  Download the data using weight <- read.table("https://dasl.datadescription.com/download/data/3218", header = T)
+  CorrectAnswer: weight <- read.table("https://dasl.datadescription.com/download/data/3218", header = T)
+  AnswerTests: omnitest(correctExpr='weight <- read.table("https://dasl.datadescription.com/download/data/3218", header = T)')
+  Hint: Try weight <- read.table("https://dasl.datadescription.com/download/data/3218", header = T).
+  
+- Class: mult_question
+  Output: What is our null hypothesis?
+  AnswerChoices: weight does not change over 12 weeks; weight does change over 12 weeks; not sure
+  CorrectAnswer: weight does not change over 12 weeks
+  AnswerTests: omnitest(correctVal='weight does not change over 12 weeks')
+  Hint: Remember a null hypothesis is one of no difference!
+  
+- Class: mult_question
+  Output: First consider what happens if we don't pair the data by student.  When I ran the test (not shown here) I got a p-value of .65.  What does that suggest about the null hypothesis?
+  AnswerChoices: reject; fail to reject; not sure
+  CorrectAnswer: fail to reject
+  AnswerTests: omnitest(correctVal='fail to reject')
+  Hint: If the p-value is less than .05 (the pre-set alpha level), we reject the null hypothesis. This means we would expect an outcome like we observed or more extreme only 1 time out of 20 (on average) if the null hypothesis were true, so it's unlikely! If its more than that we fail to reject!
+  
+- Class: cmd_question
+  Output: Now let's run a paired t-test by entering each column and noting paired = T. Try t.test(weight$Initial.Weight, weight$Terminal.Weight, paired = T).
+  CorrectAnswer: t.test(weight$Initial.Weight, weight$Terminal.Weight, paired = T)
+  AnswerTests: omnitest(correctExpr='t.test(weight$Initial.Weight, weight$Terminal.Weight, paired = T)')
+  Hint: Try t.test(weight$Initial.Weight, weight$Terminal.Weight, paired = T).
+  
+- Class: mult_question
+  Output: Now find the p-value. What does it suggest about the null hypothesis?
+  AnswerChoices: reject; fail to reject; not sure
+  CorrectAnswer: reject
+  AnswerTests: omnitest(correctVal='reject')
+  Hint: If the p-value is less than .05 (the pre-set alpha level), we reject the null hypothesis. This means we would expect an outcome like we observed or more extreme only 1 time out of 20 (on average) if the null hypothesis were true, so it's unlikely! If its more than that we fail to reject!
+  
+- Class: cmd_question
+  Output: So by running a paired test we got a significant result!  The assumptions for the paired t-test rely on normality of the differenes in the means of the data.  If we don't think this is true and the data sets have the same shape, we can use wilcox.test(weight$Initial.Weight, weight$Terminal.Weight, paired = T). Try it.
+  CorrectAnswer: wilcox.test(weight$Initial.Weight, weight$Terminal.Weight, paired = T)
+  AnswerTests: omnitest(correctExpr='wilcox.test(weight$Initial.Weight, weight$Terminal.Weight, paired = T)')
+  Hint: Try wilcox.test(weight$Initial.Weight, weight$Terminal.Weight, paired = T). 
+  
+- Class: cmd_question
+  Output: You should have found a p-value of less than .01 again (check!). Finally, if we don't believe the data sets have the same shape, we can use the SIGN.test function from the BSDA package. These tests have to be paired so they don't require paired = T argument. Load the package and try SIGN.test(weight$Initial.Weight, weight$Terminal.Weight).
+  CorrectAnswer: SIGN.test(weight$Initial.Weight, weight$Terminal.Weight)
+  AnswerTests: omnitest(correctExpr='SIGN.test(weight$Initial.Weight, weight$Terminal.Weight)')
+  Hint: Try SIGN.test(weight$Initial.Weight, weight$Terminal.Weight).
+  
+- Class: mult_question
+  Output: You should get a p-value much less than .01 again! However, note the sign and wilcoxon tests in general have less power than the t-test (but they also make less assumptions about the data. What is power?
+  AnswerChoices: ability of a test to reject a false null hypothesis; ability of a test to not reject a true null hypothesis; 
+  CorrectAnswer: ability of a test to reject a false null hypothesis
+  AnswerTests: omnitest(correctVal='ability of a test to reject a false null hypothesis')
+  Hint: A powerful test is able to reject a false null hypothesis!
+  
+- Class: text
+  Output: This concludes our review of analyzing two-sample continuous data.  Note we got similar results from many methods, but the assumptions and p-values (or lack thereof!) differ. Make sure you understand why! Also make sure you understand when data should be paired!
